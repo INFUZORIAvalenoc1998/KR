@@ -1,15 +1,25 @@
 <?php
-// config.php
-$host = 'localhost';
-$dbname = 'finance_manager';
-$username = 'GenZ'; // Укажите вашего пользователя MySQL
-$password = 'ROOT';     // Укажите ваш пароль
-
+// config.php - версия с SQLite (рекомендуется)
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    // Устанавливаем режим ошибок PDO на исключения
+    // Используем SQLite вместо MySQL
+    $pdo = new PDO('sqlite:database/finance.db');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    // Создаем таблицу если её нет
+    $pdo->exec("CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title VARCHAR(255) NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        type TEXT CHECK( type IN ('доход','расход') ) NOT NULL DEFAULT 'расход',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )");
+    
 } catch (PDOException $e) {
     die("Ошибка подключения к базе данных: " . $e->getMessage());
+}
+
+// Создаем папку для базы данных если её нет
+if (!is_dir('database')) {
+    mkdir('database', 0777, true);
 }
 ?>
